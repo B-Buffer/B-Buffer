@@ -1,0 +1,8 @@
+= What's B-Buffer
+
+* An extensive memory management layer for fully controls heap memory allocation and tracks heap memory usage.
+* An extensive memory buffer layer for Tuple, Matrix data computing and processing.
+* A B+ Tree ADT based materialization layer for Tuple, Matrix data
+* An expending and wrapping of http://teiid.org[Teiid] Buffer Manager Layer
+
+https://b-buffer.github.io/documents[**B-Buffer Documents**]

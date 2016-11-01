@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.bbuffer</groupId>
+    <artifactId>bbuffer-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>B-Buffer Parent</name>
+    <description>B Buffer Parent</description>
+
+    <properties>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	
+        <version.teiid>9.1.0.Final</version.teiid>	
+        <version.junit>4.8.2</version.junit>
+        <version.org.mockito>1.10.19</version.org.mockito>
+
+	<version.compiler.plugin>3.1</version.compiler.plugin>
+	<maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+    </properties>
+
+    
+    <build>
+    	<pluginManagement>
+    	    <plugins>
+    	    </plugins>
+    	</pluginManagement>
+    	<plugins>
+            <plugin>
+    	        <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.compiler.plugin}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <showDeprecation>false</showDeprecation>
+                    <showWarnings>false</showWarnings>
+                 </configuration>
+             </plugin>
+             <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <releaseProfiles>release</releaseProfiles>
+                </configuration>
+            </plugin>
+    	</plugins>
+    </build>
+    
+    <dependencyManagement>
+    	<dependencies>
+            <dependency>
+                <groupId>org.jboss.teiid</groupId>
+                <artifactId>teiid-parent</artifactId>
+                <type>pom</type>
+                <version>${version.teiid}</version>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+            </dependency>
+	    <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${version.org.mockito}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+	</dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <modules>
+	<module>buffer</module>
+    </modules>
+
+</project>
