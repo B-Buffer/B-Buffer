@@ -20,7 +20,7 @@ import org.teiid.logging.LogConstants;
 import org.teiid.logging.LogManager;
 
 
-public class BufferManagerBuilder {
+public class BufferBuilder {
     
     private static final long MB = 1<<20;
     private static final long GB = 1<<30;
@@ -44,72 +44,71 @@ public class BufferManagerBuilder {
     private BufferFrontedFileStoreCache fsc;
     protected int workingMaxReserveKb;
     
-    public BufferManagerBuilder processorBatchSize(int processorBatchSize) {
+    public BufferBuilder processorBatchSize(int processorBatchSize) {
         this.processorBatchSize = processorBatchSize;
         return this;
     }
     
-    public BufferManagerBuilder maxReserveKb(int maxReserveKb) {
+    public BufferBuilder maxReserveKb(int maxReserveKb) {
         this.maxReserveKb = maxReserveKb;
         return this;
     }
     
-    public BufferManagerBuilder maxProcessingKb(int maxProcessingKb) {
+    public BufferBuilder maxProcessingKb(int maxProcessingKb) {
         this.maxProcessingKb = maxProcessingKb;
         return this;
     }
     
-    public BufferManagerBuilder inlineLobs(boolean inlineLobs) {
+    public BufferBuilder inlineLobs(boolean inlineLobs) {
         this.inlineLobs = inlineLobs;
         return this;
     }
     
-    public BufferManagerBuilder useDisk(boolean useDisk) {
+    public BufferBuilder useDisk(boolean useDisk) {
         this.useDisk = useDisk;
         return this;
     }
     
-    public BufferManagerBuilder bufferDir (String bufferDir) {
+    public BufferBuilder bufferDir (String bufferDir) {
         Path path = Paths.get(bufferDir, "buffer");
         try {
-            this.bufferDir =  Files.createFile(path).toFile();
+            this.bufferDir =  Files.createDirectories(path).toFile();
         } catch (IOException e) {
-            e.printStackTrace();
         }
         return this;
     }
     
-    public BufferManagerBuilder maxOpenFiles(int maxOpenFiles) {
+    public BufferBuilder maxOpenFiles(int maxOpenFiles) {
         this.maxOpenFiles = maxOpenFiles;
         return this;
     }
     
-    public BufferManagerBuilder maxBufferSpace(long maxBufferSpace) {
+    public BufferBuilder maxBufferSpace(long maxBufferSpace) {
         this.maxBufferSpace = maxBufferSpace;
         return this;
     }
     
-    public BufferManagerBuilder maxFileSize(long maxFileSize) {
+    public BufferBuilder maxFileSize(long maxFileSize) {
         this.maxFileSize = maxFileSize;
         return this;
     }
     
-    public BufferManagerBuilder encryptFiles(boolean encryptFiles) {
+    public BufferBuilder encryptFiles(boolean encryptFiles) {
         this.encryptFiles = encryptFiles;
         return this;
     }
     
-    public BufferManagerBuilder maxStorageObjectSize(int maxStorageObjectSize) {
+    public BufferBuilder maxStorageObjectSize(int maxStorageObjectSize) {
         this.maxStorageObjectSize = maxStorageObjectSize;
         return this;
     }
     
-    public BufferManagerBuilder memoryBufferOffHeap(boolean memoryBufferOffHeap) {
+    public BufferBuilder memoryBufferOffHeap(boolean memoryBufferOffHeap) {
         this.memoryBufferOffHeap = memoryBufferOffHeap;
         return this;
     }
     
-    public BufferManagerBuilder memoryBufferSpace(long memoryBufferSpace) {
+    public BufferBuilder memoryBufferSpace(long memoryBufferSpace) {
         this.memoryBufferSpace = memoryBufferSpace;
         return this;
     }
@@ -117,8 +116,7 @@ public class BufferManagerBuilder {
     public BufferManager build() {
         
         try {
-           // Construct and initialize the buffer manager
-            this.bufferMgr = new BufferManagerImpl();
+            // Construct and initialize the buffer manager
             this.bufferMgr = new BufferManagerImpl();
             this.bufferMgr.setProcessorBatchSize(processorBatchSize);
             this.bufferMgr.setMaxReserveKB(this.maxReserveKb);

@@ -5,4 +5,4 @@
 * A B+ Tree ADT based materialization layer for Tuple, Matrix data
 * An expending and wrapping of http://teiid.org[Teiid] Buffer Manager Layer
 
-https://b-buffer.github.io/documents[**B-Buffer Documents**]
+        **More details refer to ** https://b-buffer.github.io/documents[**B-Buffer Documents**]
