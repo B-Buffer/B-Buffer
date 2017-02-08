@@ -17,7 +17,7 @@ public class TestBBuffer {
     }
     
     public static void main(String[] args) {
-        BufferManager bm = BBuffer.Factory.getBuilder()
+        BufferManager bm = BBuffer.Factory.builder()
                 .useDisk(true)
                 .bufferDir("/home/kylin/tmp/buffer")
                 .build();

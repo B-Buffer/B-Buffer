@@ -4,7 +4,7 @@ public interface BBuffer {
     
     public static class Factory {
         
-        public static BufferBuilder getBuilder() {
+        public static BufferBuilder builder() {
             return new BufferBuilder();
         }
     }

@@ -16,6 +16,7 @@
         <version.teiid>9.1.0.Final</version.teiid>	
         <version.junit>4.8.2</version.junit>
         <version.org.mockito>1.10.19</version.org.mockito>
+        <jmh.version>1.15</jmh.version>
 
 	<version.compiler.plugin>3.1</version.compiler.plugin>
 	<maven.compiler.target>1.8</maven.compiler.target>
@@ -67,6 +68,18 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
                 <version>${version.org.mockito}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>${jmh.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>${jmh.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
