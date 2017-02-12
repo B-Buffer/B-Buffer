@@ -1,8 +1,7 @@
-package org.bbuffer.teiid;
+package org.bbuffer.teiid.adt;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -19,8 +18,8 @@ import org.teiid.common.buffer.TupleBuffer;
 import org.teiid.common.buffer.TupleBuffer.TupleBufferTupleSource;
 import org.teiid.core.TeiidComponentException;
 import org.teiid.core.TeiidProcessingException;
-import org.teiid.query.processor.CollectionTupleSource;
 import org.teiid.query.sql.symbol.ElementSymbol;
+import org.teiid.query.sql.symbol.GroupSymbol;
 
 public class TestTupleBuffer {
     
@@ -65,30 +64,10 @@ public class TestTupleBuffer {
     }
     
     @Test
-    public void testTupleSource() {
-        List<List<?>> tuples = new ArrayList<>();
-        for(int i = 0 ; i < 10 ; i ++) {
-            tuples.add(Arrays.asList(i, "name-" + i));
-        }
-        CollectionTupleSource tupleSource = new CollectionTupleSource(tuples.iterator());
-        List<?> tuple = null;
-        Set<String> names = new HashSet<>();
-        while((tuple = tupleSource.nextTuple()) != null) {
-            names.add((String)tuple.get(1));
-        }
-        
-        for(int i = 0 ; i < 10 ; i ++) {
-            assertTrue(names.contains("name-" + i));
-        }
-    }
-    
-    @Test
     public void testForwardOnly() throws Exception {
         
-        ElementSymbol id = new ElementSymbol("id");
-        id.setType(Integer.class);
-        ElementSymbol name = new ElementSymbol("name");
-        name.setType(String.class);
+        ElementSymbol id = new ElementSymbol("id", new GroupSymbol("Users"), Integer.class);
+        ElementSymbol name = new ElementSymbol("name", new GroupSymbol("Users"), String.class);
         List<ElementSymbol> elements = Arrays.asList(id, name);
         
         TupleBuffer tb = BBuffer.Factory.builder().bufferDir("target/buffer").build().createTupleBuffer(elements, "Users", TupleSourceType.PROCESSOR);

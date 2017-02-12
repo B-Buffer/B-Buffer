@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.runner.Runner;
@@ -34,6 +35,7 @@ public class TestLrfuEvictionQueue {
         assertEquals(0, queue.getSize());
     }
 
+    @Ignore
     @Test
     public void testSkipListMapBencharmk() throws Exception {
         // java -jar target/benchmarks.jar -bm avgt -f 1 -wi 5 -i 5 -t 1
