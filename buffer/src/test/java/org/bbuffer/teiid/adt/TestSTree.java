@@ -2,6 +2,12 @@ package org.bbuffer.teiid.adt;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -18,7 +24,9 @@ import org.teiid.client.ResizingArrayList;
 import org.teiid.common.buffer.BufferManager;
 import org.teiid.common.buffer.STree;
 import org.teiid.common.buffer.STree.InsertMode;
+import org.teiid.common.buffer.TupleSource;
 import org.teiid.core.TeiidComponentException;
+import org.teiid.core.TeiidProcessingException;
 import org.teiid.query.processor.relational.ListNestedSortComparator;
 import org.teiid.query.sql.symbol.ElementSymbol;
 import org.teiid.query.sql.symbol.GroupSymbol;
@@ -27,7 +35,7 @@ import org.teiid.translator.ExecutionFactory.NullOrder;
 public class TestSTree {
     
     static {
-        TestHelper.enableLogger(Level.ALL);
+        TestHelper.enableLogger(Level.INFO);
     }
 
     @Test
@@ -156,22 +164,61 @@ public class TestSTree {
     public void testInsert() throws TeiidComponentException, InterruptedException {
         
         STree tree = sample();
+        int size = 1 << 7;
+        int pageSize = tree.getPageSize(false);
+        int leafSize = tree.getPageSize(true);
+        int logSize = tree.getExpectedHeight(size);
+        assertEquals(logSize, 3);
+        assertEquals(pageSize, 8);
+        assertEquals(leafSize, 4);
         
-        for(int i = 1 ; i <= 32 ; i ++) {
-            tree.insert(Arrays.asList("" + i, "name-" + i, "123456789", "Beijing", "CN"), InsertMode.NEW, 1);
+        for(int i = 1 ; i <= size ; i ++) {
+            tree.insert(Arrays.asList("" + i, "name-" + i, "123456789", "Beijing", "CN"), InsertMode.NEW, logSize);
         }
-
+        
+        assertEquals(4, tree.getHeight());
+        
+        System.out.println(tree.toString());
+    }
+    
+    @Test
+    public void testUnOrderedInsert() throws Exception {
+        
+        BufferManager bm = BBuffer.Factory.builder().bufferDir("target/buffer").processorBatchSize(16).build();
+        
+        ElementSymbol e1 = new ElementSymbol("x");
+        e1.setType(Integer.class);
+        List<ElementSymbol> elements = Arrays.asList(e1);
+        
+        STree tree = bm.createSTree(elements, "1", 1);
+        
+        int size = (1<<16)+(1<<4)+1;
+        int logSize = tree.getExpectedHeight(size);
+        int pageSize = tree.getPageSize(false);
+        int leafSize = tree.getPageSize(true);
+        
+        assertEquals(size, 65553);
+        assertEquals(logSize, 3);
+        assertEquals(pageSize, 128);
+        assertEquals(leafSize, 128);
+        
+        for (int i = 0; i < size; i++) {
+            assertNull(tree.insert(Arrays.asList(i), InsertMode.NEW, logSize));
+            assertEquals(i + 1, tree.getRowCount());
+        }
     }
     
     @Test
     public void testSearch() throws TeiidComponentException {
         
         STree tree = sample();
-        for(int i = 1 ; i <= 32 ; i ++) {
-            tree.insert(Arrays.asList("" + i, "name-" + i, "123456789", "Beijing", "CN"), InsertMode.NEW, 1);
+        int size = 1 << 7;
+        int logSize = tree.getExpectedHeight(size);
+        for(int i = 1 ; i <= size ; i ++) {
+            tree.insert(Arrays.asList("" + i, "name-" + i, "123456789", "Beijing", "CN"), InsertMode.NEW, logSize);
         } 
         
-        List<?> results = tree.find(Arrays.asList("7", "name-7"));
+        List<?> results = tree.find(Arrays.asList("99", "name-99"));
         assertEquals(5, results.size());
         assertEquals("CN", results.get(4));
         
@@ -179,6 +226,49 @@ public class TestSTree {
         assertEquals(5, results.size());
         assertEquals("CN", results.get(4));
 
+    }
+    
+    @Test
+    public void testStream() throws TeiidComponentException, IOException, ClassNotFoundException {
+        STree tree = sample();
+        int size = 1 << 7;
+        int logSize = tree.getExpectedHeight(size);
+        for(int i = 1 ; i <= size ; i ++) {
+            tree.insert(Arrays.asList("" + i, "name-" + i, "123456789", "Beijing", "CN"), InsertMode.NEW, logSize);
+        } 
+        
+        File temp = File.createTempFile("stree", "data");
+        temp.deleteOnExit();
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(temp));
+        tree.writeValuesTo(oos);
+        
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(temp));
+        Long rows = ois.readLong();
+        assertEquals(Long.valueOf(128), rows);
+        ois.close();
+    }
+    
+    @Test
+    public void testToTupleSource() throws TeiidComponentException, TeiidProcessingException {
+        STree tree = sample();
+        int size = 1 << 7;
+        int logSize = tree.getExpectedHeight(size);
+        for(int i = 1 ; i <= size ; i ++) {
+            tree.insert(Arrays.asList("" + i, "name-" + i, "123456789", "Beijing", "CN"), InsertMode.NEW, logSize);
+        } 
+        
+        TupleSource source = tree.getTupleSource(false);
+        List<?> tuple = null;
+        List<?> pre = null;
+        while((tuple = source.nextTuple()) != null) {
+            if(pre != null) {
+                String a = (String) tuple.get(0);
+                String b = (String) pre.get(0);
+                assertTrue(a.compareTo(b) >= 0);
+            }
+            pre = tuple;
+        }
+        
     }
     
     @Test
@@ -287,6 +377,16 @@ public class TestSTree {
         }
     }
     
+    @Test
+    public void testXorshiftRNGs_2() {
+        Integer[][] seeds = Utils.collectSeed(1 << 3, 1 << 8);
+        for(int i = 0 ; i < seeds.length ; i ++) {
+            if(seeds[i][1] != 0) {
+                System.out.println(seeds[i][0] + " -> " + seeds[i][1]);
+            }
+        }
+    } 
+    
     /**
      * Expected results
      * 
@@ -354,5 +454,43 @@ Level 0
         assertEquals("11111111111111111111111111111111", Integer.toBinaryString(-1));
         assertEquals("11111111111111111111111111111111", Integer.toBinaryString(-1 >> 8));
         assertEquals("111111111111111111111111", Integer.toBinaryString(-1 >>> 8));
+    }
+    
+    private static class Utils {
+        
+        public static Integer[][] collectSeed(int pageSize, int num) {
+            Integer[][] seeds = new Integer[num][num];
+            Random seedGenerator = new Random(0);
+            int mask = 1;
+            int shift = 1;
+            
+            int randomSeed = seedGenerator.nextInt() | 0x00000100; 
+            pageSize >>>= 3;
+            while (pageSize > 0) {
+                pageSize >>>= 1;
+                shift++;
+                mask <<= 1;
+                mask++;
+            }
+            
+            for(int i = 1 ; i <= num ; i ++) {
+
+                //compute level
+                int x = randomSeed;
+                x ^= x << 13;
+                x ^= x >>> 17;
+                randomSeed = x ^= x << 5;
+                int level = 0;
+                while ((x & mask) == mask) {
+                    ++level;
+                    x >>>= shift;
+                }
+                
+                seeds[i - 1][0] = i;
+                seeds[i - 1][1] = level;
+            }
+            
+            return seeds;
+        }
     }
 }
